@@ -3,11 +3,7 @@ Option Explicit
 
 
 Const wdFindContinue = 1
-'set view
-Private Sub Workbook_Open()
-    wsData.Activate
-    ActiveWindow.Zoom = 120
-End Sub
+
 
 'notes
 'supports max 4 leadership positions and max 4 professional experiences
@@ -24,22 +20,6 @@ End Sub
 '       offer different options to try to fit to one page
 '           change margins, font size
 '   Validation/manipulation for phone number format
-
-
-
-Sub resumeBuilder000()
-
-Dim timeOne
-Dim timeTwo
-
-timeOne = Timer
-
-'ActiveWindow.Zoom = 120
-Dim newThru As Byte
-newThru = 0
-Dim complete As Byte
-complete = 0
-Dim multiPageMsg As String
 
 'HEADER CONTENT
 Dim fName As String, mName As String, lName As String
@@ -64,7 +44,7 @@ Dim uniName As String, schoolName As String, uniCity As String, uniState As Stri
 Dim majorOne As String, majorTwo As String, degType As String, combMajor As String
 Dim gradMonth As String, gradYear As String, gradDate As String
 Dim GPA As String, majGPA As String, combGPA As String
-Dim binBothGPA As Byte, binExpected As Byte, binDoubleMaj As Byte
+Dim binBothGPA As Byte, binExpected As String, binDoubleMaj As Byte
 Dim courses As String, awards As String, edContentOne As String, edContentTwo As String, SAT As String, ACT As String
 Dim colCount As Integer, colWordCount As Long
 
@@ -105,104 +85,37 @@ Dim PEcontentFourA As String, PEcontentFourB As String, PEcontentFourC As String
 Dim listTitleOne As String, listTitleTwo As String, listTitleThree As String, listTitleFour As String, listTitleFive As String, listTitleSix As String, listTitleSeven As String
 Dim listOne As String, listTwo As String, listThree As String, listFour As String, listFive As String, listSix As String, listSeven As String
 
-
-
-'create and open new Word file
+'word file related
 Dim wrdApp As Object, wrdDoc As Object
 Dim i As Integer
 Dim lineWidth As Long
 Dim nPages As Integer
 Dim response As String
+Dim newThru As Byte
+Dim complete As Byte
+Dim multiPageMsg As String
+Dim timeOne, timeTwo
 
-Set wrdApp = CreateObject("Word.Application")
-'wrdApp.Visible = True
-'wrdApp.Activate
-Set wrdDoc = wrdApp.Documents.Add
-
-'set margins
-
-    With wrdApp.ActiveDocument.PageSetup
-        .RightMargin = 50
-        .LeftMargin = 50
-        .TopMargin = 25
-        .BottomMargin = 25
-        lineWidth = .PageWidth - .LeftMargin - .RightMargin
-    End With
+'set view
+Private Sub Workbook_Open()
+    wsData.Activate
+    ActiveWindow.Zoom = 120
+End Sub
 
 
+Sub resumeBuilderMain()
+timeOne = Timer
+Call initialize
 
-'delete the file if it already exists
-'With wrdDoc
-'    If Dir("C:\Documents\****.doc") <> "" Then
-'        Kill "C:\Documents\****.doc"
-'    End If
-'End With
-
-
-
-
-
-'NAME
-With wsData
-    fName = .Range("fName")
-    mName = .Range("mName")
-    lName = .Range("lName")
-End With
-
-With wrdApp.Selection
-    
-    'center
-    With .ParagraphFormat
-        .alignment = 1
-        .spaceAfter = 0
-    End With
-    
-    With .font
-        .Name = "Times New Roman"
-        .bold = True
-        .size = 22
-    End With
-    
-End With
-
-'enter content
-wrdApp.Selection.TypeText text:=fName & " " & mName & " " & lName
-'new line
-wrdApp.Selection.TypeParagraph
-
-
-
-
-'ADDRESS
-With wsData
-    addressOne = .Range("addressOne")
-    addTypeOne = .Range("addTypeOne")
-    addressTwo = .Range("addressTwo")
-    addTypeTwo = .Range("addTypeTwo")
-End With
-
-With wrdApp.Selection
-    With .font
-        .Name = "Times New Roman"
-        .bold = False
-        .size = 9.5
-    End With
-End With
-
-
-
-'line spacing
-    With wrdApp.Selection.ParagraphFormat
-        .spaceAfter = 0
-        .SpaceAfterAuto = False
-        .LineSpacingRule = wdLineSpaceExactly
-        .lineSpacing = 12
-    End With
-
-
+Call alignment(1)
+Call font(True, False, False, 22, , 0)
+Call lineSpacing(6, 6, 12)
+Call enterText(fName & " " & mName & " " & lName)
+Call newLine(wrdApp)
+Call font(False, False, False, 9.5, 0)
+Call lineSpacing(0, 0, 12)
 
 'determine address(es)
-'may consider changing this to a case structure
 If addressOne <> "" Then
     strAddress = addressOne
     If addTypeOne <> "" Or addressTwo <> "" Then
@@ -215,32 +128,11 @@ If addressOne <> "" Then
         End If
     End If
 End If
-'enter content
-    wrdApp.Selection.TypeText text:=strAddress
 
-'new line - Only put a new line if content was added
-    wrdApp.Selection.TypeParagraph
+Call enterText(strAddress)
+Call newLine(wrdApp)
 
-
-
-
-'PHONE NUMBER & EMAIL ADDRESS
-
-'expansion
-'   option to use phone types or not
-
-With wsData
-    phoneOne = .Range("phoneOne")
-    phoneTypeOne = .Range("phoneTypeOne")
-    phoneTwo = .Range("phoneTwo")
-    phoneTypeTwo = .Range("phoneTypeTwo")
-'requires validation or manipulation for formatting
-    email = .Range("email")
-End With
-
-
-
-
+'determine phone(s) and email
 If phoneOne <> "" Then
     strPhoneEmail = phoneOne
     If phoneTypeOne <> "" Or phoneTwo <> "" Then
@@ -263,39 +155,23 @@ Else
     strPhoneEmail = email
 End If
 
-'enter content
-wrdApp.Selection.TypeText text:=strPhoneEmail
+Call enterText(strPhoneEmail)
 
-'new line - Only put a new line if content was added
 If strPhoneEmail <> "" Then
-    wrdApp.Selection.TypeParagraph
+    Call newLine(wrdApp)
 End If
 
-
-
-
-
-
-'ADDITIONAL CONTENT
-
-'expansion
-'   allow for headerContentTypes
-'   allow for the option for headerContentTypes
-
-headerContentOne = wsData.Range("headerContentOne")
-headerContentTwo = wsData.Range("headerContentTwo")
-headerContentThree = wsData.Range("headerContentThree")
-
+'header content
 If headerContentOne <> "" Then
     strHeaderContent = headerContentOne
 End If
 
 If headerContentTwo <> "" Then
-    
+
     If headerContentOne <> "" Then
         headerContentTwo = " | " & headerContentTwo
     End If
-    
+
     strHeaderContent = strHeaderContent & headerContentTwo
 End If
 
@@ -308,175 +184,69 @@ If headerContentThree <> "" Then
     strHeaderContent = strHeaderContent & headerContentThree
 End If
 
-'enter content
-wrdApp.Selection.TypeText text:=strHeaderContent
+Call enterText(strHeaderContent)
+Call newLine(wrdApp)
+Call font(True, False, False, 10, , 0)
 
-'new line
-wrdApp.Selection.TypeParagraph
-
-
-
-
-
-
-
-'SUMMARY SECTION
-summary = wsData.Range("summary")
-
+'summary
 If summary <> "" Then
-    'center
-    With wrdApp.Selection
-        .font.bold = True
-        
-        With .ParagraphFormat
-            .alignment = 1
-            .spaceAfter = 0
-        End With
-        
-        .TypeParagraph
-        .TypeText text:="SUMMARY"
-        
-        With wrdApp.Selection
-            .Characters(1).borders.Enable = True
-            
-            With .ParagraphFormat
-                .borders(wdBorderBottom).lineWidth = wdLineWidth025pt
-                .borders(wdBorderTop).LineStyle = wdLineStyleNone
-                .borders(wdBorderRight).LineStyle = wdLineStyleNone
-                .borders(wdBorderLeft).LineStyle = wdLineStyleNone
-            End With
-            
-        End With
-        
-        With wrdApp.Selection
-            .TypeParagraph
-            .Characters(1).borders.Enable = False
-            'align left
-            .ParagraphFormat.alignment = 0
-            .font.size = 10
-        End With
-    
-        .font.bold = False
-        
-        With .ParagraphFormat
-            .alignment = 0
-            .spaceAfter = 0
-        End With
-        
-        .TypeText text:=summary
-        .TypeParagraph
-        .TypeParagraph
-        
-    End With
-Else: wrdApp.Selection.TypeParagraph
+    Call alignment(1)
+    Call newLine(wrdApp)
+    Call enterText("SUMMARY")
+    Call borders(True)
+    Call newLine(wrdApp)
+    Call borders(False)
+    Call alignment(0)
+    Call font(False, False, False, 10, , 0)
+    Call enterText(summary)
+    Call newLine(wrdApp): Call newLine(wrdApp)
+Else
+    Call newLine(wrdApp)
 End If
 
-With wrdApp.Selection.ParagraphFormat
-    .alignment = 1
-    .spaceAfter = 0
-End With
+Call alignment(1)
 
+'education
+Call font(True, False, False, 10, , 0)
+Call enterText("EDUCATION")
+Call borders(True)
+Call newLine(wrdApp)
 
+Call borders(False)
+Call alignment(0)
+Call enterText(uniName)
 
+Call font(False, False, False, 10, , 0)
+Call enterText(uniLoc)
+Call sendRight(uniLoc)
+Call newLine(wrdApp)
 
+Call font(True, False, False, 10, , 0)
+Call enterText(schoolName)
 
+Call font(False, False, False, 10, , 0)
 
-
-'EDUCATION
-
-wrdApp.Selection.font.bold = True
-wrdApp.Selection.TypeText text:="EDUCATION"
-
-'add line
-With wrdApp.Selection
-    .Characters(1).borders.Enable = True
-    With .ParagraphFormat
-        .borders(wdBorderBottom).lineWidth = wdLineWidth025pt
-        .borders(wdBorderTop).LineStyle = wdLineStyleNone
-        .borders(wdBorderRight).LineStyle = wdLineStyleNone
-        .borders(wdBorderLeft).LineStyle = wdLineStyleNone
-    End With
-End With
-
-wrdApp.Selection.TypeParagraph
-With wrdApp.Selection
-    .Characters(1).borders.Enable = False
-    'align left
-    .ParagraphFormat.alignment = 0
-    .font.size = 10
-End With
-
-uniName = Range("uniName")
-wrdApp.Selection.TypeText text:=uniName
-
-wrdApp.Selection.font.bold = False
-
-uniCity = Range("uniCity")
-uniState = Range("uniState")
-
-uniLoc = uniCity & ", " & uniState
-wrdApp.Selection.TypeText text:=uniLoc
-    
-       
-wrdApp.Selection.ParagraphFormat.TabStops.Add position:=lineWidth, _
-alignment:=wdAlignTabRight, Leader:=0
-wrdApp.Selection.MoveLeft Unit:=1, Count:=Len(uniLoc)
-wrdApp.Selection.TypeText text:=vbTab
-wrdApp.Selection.MoveRight Unit:=1, Count:=Len(uniLoc)
-
-'new line
-wrdApp.Selection.TypeParagraph
-
-schoolName = Range("schoolName")
-wrdApp.Selection.font.bold = True
-wrdApp.Selection.TypeText text:=schoolName
-
-wrdApp.Selection.font.bold = False
-binExpected = 1
-gradMonth = Range("gradMonth")
-gradYear = Range("gradYear")
-gradDate = gradMonth & " " & gradYear
-
+If binExpected = "Expected" Then binExpected = 1 Else binExpected = 0
 If binExpected = 1 Then
     gradDate = "Expected " & gradDate
 End If
 
-With wrdApp.Selection
-    .TypeText text:=gradDate
-    .MoveLeft Unit:=1, Count:=Len(gradDate)
-    .TypeText text:=vbTab
-    .MoveRight Unit:=1, Count:=Len(gradDate)
-End With
+Call enterText(gradDate)
+Call sendRight(gradDate)
+Call newLine(wrdApp)
+Call font(False, True, False, 10, , 0)
 
-'new line
-wrdApp.Selection.TypeParagraph
-
-wrdApp.Selection.font.italic = True
-
-binDoubleMaj = 0
-If majorOne <> "" And majorTwo <> "" Then binDoubleMaj = 1
-
-degType = Range("degType")
-majorOne = Range("majorOne")
-majorTwo = Range("majorTwo")
-
-If binDoubleMaj = 1 Then
+If majorOne <> "" And majorTwo <> "" Then
     combMajor = degType & " - " & majorOne & " and " & majorTwo & " (Double Major)"
 Else
     combMajor = degType & " - " & majorOne
 End If
 
-wrdApp.Selection.TypeText text:=combMajor
+Call enterText(combMajor)
 
+Call font(False, False, False, 10, , 0)
 
-
-wrdApp.Selection.font.italic = False
-GPA = Range("GPA")
-majGPA = Range("majGPA")
-
-If GPA <> "" And majGPA <> "" Then binBothGPA = 1
-
-If binBothGPA = 1 Then
+If GPA <> "" And majGPA <> "" Then
     combGPA = "Cumulative GPA: " & GPA & " | Major GPA: " & majGPA
 Else
     If GPA <> "" Then
@@ -486,25 +256,10 @@ Else
     End If
 End If
 
-With wrdApp.Selection
-    .TypeText text:=combGPA
-    .MoveLeft Unit:=1, Count:=Len(combGPA)
-    .TypeText text:=vbTab
-    .MoveRight Unit:=1, Count:=Len(combGPA)
-End With
+Call enterText(combGPA)
+Call sendRight(combGPA)
+Call newLine(wrdApp)
 
-
-'new line
-wrdApp.Selection.TypeParagraph
-
-courses = Range("courses")
-awards = Range("awards")
-edContentOne = Range("edContentOne")
-edContentTwo = Range("edContentTwo")
-SAT = Range("SAT")
-ACT = Range("ACT")
-
-'create bulletted list for edContent if there is any
 If courses <> "" Or _
     awards <> "" Or _
     edContentOne <> "" Or _
@@ -512,174 +267,511 @@ If courses <> "" Or _
     SAT <> "" Or _
     ACT <> "" Then
 
-    With wrdApp
-        .ListGalleries(wdBulletGallery).ListTemplates(1).Name = ""
-        .Selection.Range.ListFormat.ApplyListTemplate ListTemplate:=.ListGalleries(wdBulletGallery).ListTemplates(1), _
-        continuepreviouslist:=False, applyto:=wdListApplyToWholeList, defaultlistbehavior:=wdWord9ListBehavior
-    End With
-    
-    If SAT <> "" Then
-        SAT = "SAT Score: " & SAT
-        wrdApp.Selection.TypeText text:=SAT
-        wrdApp.Selection.TypeParagraph
-        'colCount = colCount + 1
-        'colWordCount = colWordCount + Len(SAT)
-    End If
-    
-    If ACT <> "" Then
-        ACT = "ACT Score: " & ACT
-        wrdApp.Selection.TypeText text:=ACT
-        wrdApp.Selection.TypeParagraph
-        'colCount = colCount + 1
-        'colWordCount = colWordCount + Len(ACT)
-    End If
-    
-    If courses <> "" Then
-        wrdApp.Selection.TypeText text:=courses
-        wrdApp.Selection.TypeParagraph
-        'colCount = colCount + 1
-        'colWordCount = colWordCount + Len(courses)
-    End If
-    
-    If awards <> "" Then
-        wrdApp.Selection.TypeText text:=awards
-        wrdApp.Selection.TypeParagraph
-        'colCount = colCount + 1
-        'colWordCount = colWordCount + Len(awards)
-    End If
-    
-    If edContentOne <> "" Then
-        wrdApp.Selection.TypeText text:=edContentOne
-        wrdApp.Selection.TypeParagraph
-        'colCount = colCount + 1
-        'colWordCount = colWordCount + Len(edContentOne)
-    End If
-    
-    If edContentTwo <> "" Then
-        wrdApp.Selection.TypeText text:=edContentTwo
-        wrdApp.Selection.TypeParagraph
-        'colCount = colCount + 1
-        'colWordCount = colWordCount + Len(edContentTwo)
-    End If
-    
-    'create 2 columns if 5 or more of the fields are filled out
-'    If colCount > 4 Then
-'
-'        wrdApp.Selection.MoveUp Unit:=wdParagraph, Count:=colCount, Extend:=wdExtend
-'
-'        With wrdApp.Selection.PageSetup.TextColumns
-'            .SetCount NumColumns:=2
-'            .EvenlySpaced = True
-'            .LineBetween = False
-'            .Width = InchesToPoints(7.11)
-'        End With
-'
-'    End If
-    
-    'end bulletted list
-    wrdApp.Selection.Range.ListFormat.RemoveNumbers wdBulletGallery
-    wrdApp.Selection.TypeParagraph
+        Call bulletList(True)
+
+        If SAT <> "" Then
+            SAT = "SAT Score: " & SAT
+            Call enterText(SAT)
+            Call newLine(wrdApp)
+        End If
+
+        If ACT <> "" Then
+            ACT = "ACT Score: " & ACT
+            Call enterText(ACT)
+            Call newLine(wrdApp)
+        End If
+
+        If courses <> "" Then
+            Call enterText(courses)
+            Call newLine(wrdApp)
+        End If
+
+        If awards <> "" Then
+            Call enterText(awards)
+            Call newLine(wrdApp)
+        End If
+
+        If edContentOne <> "" Then
+            Call enterText(edContentOne)
+            Call newLine(wrdApp)
+        End If
+
+        If edContentTwo <> "" Then
+            Call enterText(edContentTwo)
+            Call newLine(wrdApp)
+        End If
+
+        Call bulletList(False)
+End If
+
+'Section A
+Call font(True, False, False, 10, , 1)
+Call enterText(wsData.Range("secOneTitle"))
+Call alignment(1)
+
+Call borders(True)
+Call newLine(wrdApp)
+Call borders(False)
+Call alignment(0)
+Call font(True, False, False, 10, , 0)
+
+Call findDates
+
+
+If LEcityOne <> "" And LEstateOne <> "" Then
+    Call addPosition(LEtitleOne, LEorgOne, LElocOne, LEdateRangeOne, LEcontentOneA, LEcontentOneB, LEcontentOneC)
+End If
+
+If LEcityTwo <> "" And LEstateTwo <> "" Then
+    Call addPosition(LEtitleTwo, LEorgTwo, LElocTwo, LEdateRangeTwo, LEcontentTwoA, LEcontentTwoB, LEcontentTwoC)
+End If
+
+If LEcityThree <> "" And LEstateThree <> "" Then
+    Call addPosition(LEtitleThree, LEorgThree, LElocThree, LEdateRangeThree, LEcontentThreeA, LEcontentThreeB, LEcontentThreeC)
+End If
+
+If LEcityFour <> "" And LEstateFour <> "" Then
+    Call addPosition(LEtitleFour, LEorgFour, LElocFour, LEdateRangeFour, LEcontentFourA, LEcontentFourB, LEcontentFourC)
+End If
+
+'Section B
+Call font(True, False, False, 10, , 1)
+Call enterText(wsData.Range("secTwoTitle"))
+Call alignment(1)
+
+Call borders(True)
+Call newLine(wrdApp)
+Call borders(False)
+Call alignment(0)
+Call font(True, False, False, 10, , 0)
+
+
+If PEcityOne <> "" And PEstateOne <> "" Then
+    Call addPosition(PEtitleOne, PEorgOne, PElocOne, PEdateRangeOne, PEcontentOneA, PEcontentOneB, PEcontentOneC)
+End If
+
+If PEcityTwo <> "" And PEstateTwo <> "" Then
+    Call addPosition(PEtitleTwo, PEorgTwo, PElocTwo, PEdateRangeTwo, PEcontentTwoA, PEcontentTwoB, PEcontentTwoC)
+End If
+
+If PEcityThree <> "" And PEstateThree <> "" Then
+    Call addPosition(PEtitleThree, PEorgThree, PElocThree, PEdateRangeThree, PEcontentThreeA, PEcontentThreeB, PEcontentThreeC)
+End If
+
+If PEcityFour <> "" And PEstateFour <> "" Then
+    Call addPosition(PEtitleFour, PEorgFour, PElocFour, PEdateRangeFour, PEcontentFourA, PEcontentFourB, PEcontentFourC)
 End If
 
 
+'Section C
+Call font(True, False, False, 10, , 1)
+Call enterText(wsData.Range("secThreeTitle"))
+Call alignment(1)
+
+Call borders(True)
+Call newLine(wrdApp)
+Call borders(False)
+Call alignment(0)
+Call font(True, False, False, 10, , 0)
+
+If listOne <> "" Then
+    Call addSkill(listTitleOne, listOne)
+End If
+
+If listTwo <> "" Then
+    Call addSkill(listTitleTwo, listTwo)
+End If
+
+If listThree <> "" Then
+    Call addSkill(listTitleThree, listThree)
+End If
+
+If listFour <> "" Then
+    Call addSkill(listTitleFour, listFour)
+End If
+
+If listFive <> "" Then
+    Call addSkill(listTitleFive, listFive)
+End If
+
+If listSix <> "" Then
+    Call addSkill(listTitleSix, listSix)
+End If
+
+If listSeven <> "" Then
+    Call addSkill(listTitleSeven, listSeven)
+End If
+
+'END OF RESUME CONTENT
+
+Call doctor
+Call showDoc
+
+End Sub
+
+Sub initialize()
+
+newThru = 0
+complete = 0
+
+'create and open new Word file
+Set wrdApp = CreateObject("Word.Application")
+'wrdApp.Visible = True
+'wrdApp.Activate
+Set wrdDoc = wrdApp.Documents.Add
+
+'initialize margins
+With wrdApp.ActiveDocument.PageSetup
+    .RightMargin = 50
+    .LeftMargin = 50
+    .TopMargin = 25
+    .BottomMargin = 25
+    lineWidth = .PageWidth - .LeftMargin - .RightMargin
+End With
+
+'initialize alignment
+wrdApp.Selection.ParagraphFormat.alignment = wdAlignParagraphCenter
+
+'initialize line spacing
+With wrdApp.Selection.ParagraphFormat
+    .LeftIndent = InchesToPoints(0)
+    .RightIndent = InchesToPoints(0)
+    .spaceBefore = 0
+    .SpaceBeforeAuto = False
+    .spaceAfter = 0
+    .SpaceAfterAuto = False
+    .LineSpacingRule = wdLineSpaceExactly
+    .WidowControl = True
+    .KeepWithNext = False
+    .KeepTogether = False
+    .PageBreakBefore = False
+    .NoLineNumber = False
+    .Hyphenation = True
+    .FirstLineIndent = InchesToPoints(0)
+    .OutlineLevel = wdOutlineLevelBodyText
+    .CharacterUnitLeftIndent = 0
+    .CharacterUnitRightIndent = 0
+    .CharacterUnitFirstLineIndent = 0
+    .LineUnitBefore = 0
+    .LineUnitAfter = 0
+    .MirrorIndents = False
+    .TextboxTightWrap = wdTightNone
+End With
+
+'initialize font
+With wrdApp.Selection.font
+    .UnderlineColor = wdColorAutomatic
+    .Name = "Times New Roman"
+    .Color = -587137025
+End With
+
+'initialize tabstops
+wrdApp.Selection.ParagraphFormat.TabStops.Add position:=lineWidth, _
+alignment:=wdAlignTabRight, Leader:=0
 
 
 
+'********************************************************************************************
+
+'set values
+With wsData
+'NAME
+    fName = .Range("fName")
+    mName = .Range("mName")
+    lName = .Range("lName")
+
+'ADDRESS
+    addressOne = .Range("addressOne")
+    addTypeOne = .Range("addTypeOne")
+    addressTwo = .Range("addressTwo")
+    addTypeTwo = .Range("addTypeTwo")
+
+'PHONE NUMBER & EMAIL ADDRESS
+    phoneOne = .Range("phoneOne")
+    phoneTypeOne = .Range("phoneTypeOne")
+    phoneTwo = .Range("phoneTwo")
+    phoneTypeTwo = .Range("phoneTypeTwo")
+    email = .Range("email")
+
+'ADDITIONAL CONTENT
+    headerContentOne = .Range("headerContentOne")
+    headerContentTwo = .Range("headerContentTwo")
+    headerContentThree = .Range("headerContentThree")
+
+'SUMMARY SECTION
+    summary = .Range("summary")
+
+'EDUCATION
+    uniName = .Range("uniName")
+    uniCity = .Range("uniCity")
+    uniState = .Range("uniState")
+    uniLoc = uniCity & ", " & uniState
+    schoolName = .Range("schoolName")
+    gradMonth = .Range("gradMonth")
+    gradYear = .Range("gradYear")
+    gradDate = gradMonth & " " & gradYear
+    binExpected = .Range("binExpected")
+    degType = .Range("degType")
+    majorOne = .Range("majorOne")
+    majorTwo = .Range("majorTwo")
+    GPA = .Range("GPA")
+    majGPA = .Range("majGPA")
+    courses = .Range("courses")
+    awards = .Range("awards")
+    edContentOne = .Range("edContentOne")
+    edContentTwo = .Range("edContentTwo")
+    SAT = .Range("SAT")
+    ACT = .Range("ACT")
+
+'SECTION A
+    LEtitleOne = .Range("LEtitleOne")
+    LEorgOne = .Range("LEorgOne")
+    LEcityOne = .Range("LEcityOne")
+    LEstateOne = .Range("LEstateOne")
+    LElocOne = LEcityOne & ", " & LEstateOne
+    LEstartMoOne = .Range("LEstartMoOne")
+    LEstartYrOne = .Range("LEstartYrOne")
+    LEendMoOne = .Range("LEendMoOne")
+    LEendYrOne = .Range("LEendYrOne")
+    LEcontentOneA = .Range("LEcontentOneA")
+    LEcontentOneB = .Range("LEcontentOneB")
+    LEcontentOneC = .Range("LEcontentOneC")
+
+    LEtitleTwo = .Range("LEtitleTwo")
+    LEorgTwo = .Range("LEorgTwo")
+    LEcityTwo = .Range("LEcityTwo")
+    LEstateTwo = .Range("LEstateTwo")
+    LElocTwo = LEcityTwo & ", " & LEstateTwo
+    LEstartMoTwo = .Range("LEstartMoTwo")
+    LEstartYrTwo = .Range("LEstartYrTwo")
+    LEendMoTwo = .Range("LEendMoTwo")
+    LEendYrTwo = .Range("LEendYrTwo")
+    LEcontentTwoA = .Range("LEcontentTwoA")
+    LEcontentTwoB = .Range("LEcontentTwoB")
+    LEcontentTwoC = .Range("LEcontentTwoC")
+
+    LEtitleThree = .Range("LEtitleThree")
+    LEorgThree = .Range("LEorgThree")
+    LEcityThree = .Range("LEcityThree")
+    LEstateThree = .Range("LEstateThree")
+    LElocThree = LEcityThree & ", " & LEstateThree
+    LEstartMoThree = .Range("LEstartMoThree")
+    LEstartYrThree = .Range("LEstartYrThree")
+    LEendMoThree = .Range("LEendMoThree")
+    LEendYrThree = .Range("LEendYrThree")
+    LEcontentThreeA = .Range("LEcontentThreeA")
+    LEcontentThreeB = .Range("LEcontentThreeB")
+    LEcontentThreeC = .Range("LEcontentThreeC")
+
+    LEtitleFour = .Range("LEtitleFour")
+    LEorgFour = .Range("LEorgFour")
+    LEcityFour = .Range("LEcityFour")
+    LEstateFour = .Range("LEstateFour")
+    LEstartMoFour = .Range("LEstartMoFour")
+    LElocFour = LEcityFour & ", " & LEstateFour
+    LEstartYrFour = .Range("LEstartYrFour")
+    LEendMoFour = .Range("LEendMoFour")
+    LEendYrFour = .Range("LEendYrFour")
+    LEcontentFourA = .Range("LEcontentFourA")
+    LEcontentFourB = .Range("LEcontentFourB")
+    LEcontentFourC = .Range("LEcontentFourC")
+
+'SECTION B
+    PEtitleOne = .Range("PEtitleOne")
+    PEorgOne = .Range("PEorgOne")
+    PEcityOne = .Range("PEcityOne")
+    PEstateOne = .Range("PEstateOne")
+    PElocOne = PEcityOne & ", " & PEstateOne
+    PEstartMoOne = .Range("PEstartMoOne")
+    PEstartYrOne = .Range("PEstartYrOne")
+    PEendMoOne = .Range("PEendMoOne")
+    PEendYrOne = .Range("PEendYrOne")
+    PEcontentOneA = .Range("PEcontentOneA")
+    PEcontentOneB = .Range("PEcontentOneB")
+    PEcontentOneC = .Range("PEcontentOneC")
+
+    PEtitleTwo = .Range("PEtitleTwo")
+    PEorgTwo = .Range("PEorgTwo")
+    PEcityTwo = .Range("PEcityTwo")
+    PEstateTwo = .Range("PEstateTwo")
+    PElocTwo = PEcityTwo & ", " & PEstateTwo
+    PEstartMoTwo = .Range("PEstartMoTwo")
+    PEstartYrTwo = .Range("PEstartYrTwo")
+    PEendMoTwo = .Range("PEendMoTwo")
+    PEendYrTwo = .Range("PEendYrTwo")
+    PEcontentTwoA = .Range("PEcontentTwoA")
+    PEcontentTwoB = .Range("PEcontentTwoB")
+    PEcontentTwoC = .Range("PEcontentTwoC")
+
+    PEtitleThree = .Range("PEtitleThree")
+    PEorgThree = .Range("PEorgThree")
+    PEcityThree = .Range("PEcityThree")
+    PEstateThree = .Range("PEstateThree")
+    PElocThree = PEcityThree & ", " & PEstateThree
+    PEstartMoThree = .Range("PEstartMoThree")
+    PEstartYrThree = .Range("PEstartYrThree")
+    PEendMoThree = .Range("PEendMoThree")
+    PEendYrThree = .Range("PEendYrThree")
+    PEcontentThreeA = .Range("PEcontentThreeA")
+    PEcontentThreeB = .Range("PEcontentThreeB")
+    PEcontentThreeC = .Range("PEcontentThreeC")
+
+    PEtitleFour = .Range("PEtitleFour")
+    PEorgFour = .Range("PEorgFour")
+    PEcityFour = .Range("PEcityFour")
+    PEstateFour = .Range("PEstateFour")
+    PElocFour = PEcityFour & ", " & PEstateFour
+    PEstartMoFour = .Range("PEstartMoFour")
+    PEstartYrFour = .Range("PEstartYrFour")
+    PEendMoFour = .Range("PEendMoFour")
+    PEendYrFour = .Range("PEendYrFour")
+    PEcontentFourA = .Range("PEcontentFourA")
+    PEcontentFourB = .Range("PEcontentFourB")
+    PEcontentFourC = .Range("PEcontentFourC")
+
+'SECTION C
+    listTitleOne = .Range("listTitleOne")
+    listTitleTwo = .Range("listTitleTwo")
+    listTitleThree = .Range("listTitleThree")
+    listTitleFour = .Range("listTitleFour")
+    listTitleFive = .Range("listTitleFive")
+    listTitleSix = .Range("listTitleSix")
+    listTitleSeven = .Range("listTitleSeven")
+
+    listOne = .Range("listOne")
+    listTwo = .Range("listTwo")
+    listThree = .Range("listThree")
+    listFour = .Range("listFour")
+    listFive = .Range("listFive")
+    listSix = .Range("listSix")
+    listSeven = .Range("listSeven")
 
 
+End With
 
+End Sub
 
+Sub alignment(align As Integer)
 
-
-
-
-
-'LEADERSHIP EXPERIENCE
-
-With wrdApp.Selection
-    .font.bold = True
-    .TypeText text:=UCase(wsData.Range("secOneTitle"))
+With wrdApp.Selection.ParagraphFormat
+    'left
+    If align = 0 Then .alignment = wdAlignParagraphLeft
     'center
-    With .ParagraphFormat
-        .alignment = 1
-        .spaceAfter = 0
-    End With
-End With
-    
-
-
-'add line
-With wrdApp.Selection
-    .Characters(1).borders.Enable = True
-    With .ParagraphFormat
-        .borders(wdBorderBottom).lineWidth = wdLineWidth025pt
-        .borders(wdBorderTop).LineStyle = wdLineStyleNone
-        .borders(wdBorderRight).LineStyle = wdLineStyleNone
-        .borders(wdBorderLeft).LineStyle = wdLineStyleNone
-    End With
-    
-    .TypeParagraph
+    If align = 1 Then .alignment = wdAlignParagraphCenter
+    'right
+    If align = 2 Then .alignment = wdAlignParagraphRight
+    'justify
+    If align = 3 Then .alignment = wdAlignParagraphJustify
 End With
 
+End Sub
+
+Sub lineSpacing(spaceB As Single, _
+                spaceA As Single, _
+                points As Single)
+
+With wrdApp.Selection.ParagraphFormat
+    .spaceBefore = spaceB
+    .spaceAfter = spaceA
+    .lineSpacing = points
+End With
+
+End Sub
+
+Sub font(Optional bold As Boolean, _
+        Optional italic As Boolean, _
+        Optional underline As Boolean, _
+        Optional size As Double, _
+        Optional fontColor As String, _
+        Optional fontCase As Integer = 0)
+
 With wrdApp.Selection
+    With .font
+        'wdToggle or True/False
+        If bold = True Then .bold = True Else .bold = False
+        '.Bold = wdToggle
+        If italic = True Then .italic = True Else .italic = False
+        '.Italic = wdToggle
+        If underline = True Then .underline = wdUnderlineSingle Else .underline = wdUnderlineNone
+        '.Grow
+        '.Shrink
+        .size = size
+        '.Color = fontColor
+    End With
+
+    With .Range
+    'cases
+        If fontCase = 1 Then .Case = wdUpperCase        'upper case
+        If fontCase = 2 Then .Case = wdTitleWord        'cap each word
+        If fontCase = 4 Then .Case = wdTitleSentence    'sentence case
+    End With
+End With
+
+End Sub
+
+
+Sub enterText(text As String)
+
+wrdApp.Selection.TypeText text:=text
+
+End Sub
+
+Sub newLine(wrdApp)
+
+wrdApp.Selection.TypeParagraph
+
+End Sub
+
+
+Sub borders(setting As Boolean)
+With wrdApp.Selection
+    If setting = True Then
+
+        .Characters(1).borders.Enable = True
+
+        With .ParagraphFormat
+            .borders(wdBorderBottom).lineWidth = wdLineWidth025pt
+            .borders(wdBorderTop).LineStyle = wdLineStyleNone
+            .borders(wdBorderRight).LineStyle = wdLineStyleNone
+            .borders(wdBorderLeft).LineStyle = wdLineStyleNone
+        End With
+    Else
     .Characters(1).borders.Enable = False
-    'align left
-    .ParagraphFormat.alignment = 0
-    .font.size = 10
+    End If
 End With
 
+End Sub
+
+
+Sub sendRight(strToMove As String)
+
+    With wrdApp.Selection
+        .MoveLeft Unit:=1, Count:=Len(strToMove)
+        .TypeText text:=vbTab
+        .MoveRight Unit:=1, Count:=Len(strToMove)
+    End With
+
+End Sub
+
+Sub bulletList(setting As Boolean)
+
+With wrdApp
+    If setting = True Then
+        .Selection.ParagraphFormat.LeftIndent = -10
+        .ListGalleries(wdBulletGallery).ListTemplates(1).Name = ""
+        .Selection.Range.ListFormat.ApplyListTemplate ListTemplate:=.ListGalleries(wdBulletGallery).ListTemplates(1), _
+        continuepreviouslist:=False, applyto:=wdListApplyToWholeList, defaultlistbehavior:=wdWord9ListBehavior
+    Else
+        .Selection.Range.ListFormat.RemoveNumbers wdBulletGallery
+        Call newLine(wrdApp)
+    End If
+End With
+
+End Sub
 
 
 
-
-'store variables
-LEtitleOne = Range("LEtitleOne")
-LEorgOne = Range("LEorgOne")
-LEcityOne = Range("LEcityOne")
-LEstateOne = Range("LEstateOne")
-LEstartMoOne = Range("LEstartMoOne")
-LEstartYrOne = Range("LEstartYrOne")
-LEendMoOne = Range("LEendMoOne")
-LEendYrOne = Range("LEendYrOne")
-LEcontentOneA = Range("LEcontentOneA")
-LEcontentOneB = Range("LEcontentOneB")
-LEcontentOneC = Range("LEcontentOneC")
-
-LEtitleTwo = Range("LEtitleTwo")
-LEorgTwo = Range("LEorgTwo")
-LEcityTwo = Range("LEcityTwo")
-LEstateTwo = Range("LEstateTwo")
-LEstartMoTwo = Range("LEstartMoTwo")
-LEstartYrTwo = Range("LEstartYrTwo")
-LEendMoTwo = Range("LEendMoTwo")
-LEendYrTwo = Range("LEendYrTwo")
-LEcontentTwoA = Range("LEcontentTwoA")
-LEcontentTwoB = Range("LEcontentTwoB")
-LEcontentTwoC = Range("LEcontentTwoC")
-
-LEtitleThree = Range("LEtitleThree")
-LEorgThree = Range("LEorgThree")
-LEcityThree = Range("LEcityThree")
-LEstateThree = Range("LEstateThree")
-LEstartMoThree = Range("LEstartMoThree")
-LEstartYrThree = Range("LEstartYrThree")
-LEendMoThree = Range("LEendMoThree")
-LEendYrThree = Range("LEendYrThree")
-LEcontentThreeA = Range("LEcontentThreeA")
-LEcontentThreeB = Range("LEcontentThreeB")
-LEcontentThreeC = Range("LEcontentThreeC")
-
-LEtitleFour = Range("LEtitleFour")
-LEorgFour = Range("LEorgFour")
-LEcityFour = Range("LEcityFour")
-LEstateFour = Range("LEstateFour")
-LEstartMoFour = Range("LEstartMoFour")
-LEstartYrFour = Range("LEstartYrFour")
-LEendMoFour = Range("LEendMoFour")
-LEendYrFour = Range("LEendYrFour")
-LEcontentFourA = Range("LEcontentFourA")
-LEcontentFourB = Range("LEcontentFourB")
-LEcontentFourC = Range("LEcontentFourC")
+Sub findDates()
 
 If LEstartMoOne <> "" Or _
     LEstartYrOne <> "" Or _
@@ -713,416 +805,6 @@ If LEstartMoFour <> "" Or _
         If LEendYrFour <> "" Then LEdateRangeFour = LEdateRangeFour & " " & LEendYrFour
 End If
 
-'LE POSITION ONE
-
-If LEcityOne <> "" And LEstateOne <> "" Then
-
-With wrdApp.Selection
-    .TypeText text:=LEtitleOne
-    .font.bold = False
-    
-    
-        LElocOne = LEcityOne & ", " & LEstateOne
-        .TypeText text:=LElocOne
-    
-    
-        .ParagraphFormat.TabStops.Add position:=lineWidth, _
-            alignment:=wdAlignTabRight, Leader:=0
-        .MoveLeft Unit:=1, Count:=Len(LElocOne)
-        .TypeText text:=vbTab
-        .MoveRight Unit:=1, Count:=Len(LElocOne)
-    
-        .TypeParagraph
-    
-        .font.italic = True
-        .TypeText text:=LEorgOne
-        .font.italic = False
-        .TypeText text:=LEdateRangeOne
-        .ParagraphFormat.TabStops.Add position:=lineWidth, _
-            alignment:=wdAlignTabRight, Leader:=0
-        .MoveLeft Unit:=1, Count:=Len(LEdateRangeOne)
-        .TypeText text:=vbTab
-        .MoveRight Unit:=1, Count:=Len(LEdateRangeOne)
-        .TypeParagraph
-        
-        
-    With .ParagraphFormat
-        .spaceBefore = 0
-        .SpaceBeforeAuto = False
-        .spaceAfter = 0
-        .SpaceAfterAuto = False
-        .LineSpacingRule = wdLineSpaceExactly
-        .lineSpacing = 6
-    End With
-        
-        .TypeParagraph
-        .ParagraphFormat.lineSpacing = 12
-    
-End With
-
-
-
-With wrdApp
-    .ListGalleries(wdBulletGallery).ListTemplates(1).Name = ""
-    .Selection.Range.ListFormat.ApplyListTemplate ListTemplate:=.ListGalleries(wdBulletGallery).ListTemplates(1), _
-        continuepreviouslist:=False, applyto:=wdListApplyToWholeList, defaultlistbehavior:=wdWord9ListBehavior
-End With
-
-    If LEcontentOneA <> "" Then
-        wrdApp.Selection.TypeText text:=LEcontentOneA
-        wrdApp.Selection.TypeParagraph
-    End If
-    
-    If LEcontentOneB <> "" Then
-        wrdApp.Selection.TypeText text:=LEcontentOneB
-        wrdApp.Selection.TypeParagraph
-    End If
-
-    If LEcontentOneC <> "" Then
-        wrdApp.Selection.TypeText text:=LEcontentOneC
-        wrdApp.Selection.TypeParagraph
-    End If
-    
-    'end bulletted list
-    wrdApp.Selection.Range.ListFormat.RemoveNumbers wdBulletGallery
-    
-    
-'    With wrdApp.Selection.ParagraphFormat
-'            .SpaceBefore = 0
-'            .SpaceBeforeAuto = False
-'            .SpaceAfter = 0
-'            .SpaceAfterAuto = False
-'            .LineSpacingRule = wdLineSpaceExactly
-'            .LineSpacing = 6
-'        End With
-        wrdApp.Selection.TypeParagraph
-        wrdApp.Selection.ParagraphFormat.lineSpacing = 12
-
-
-End If
-
-
-'LE POSITION TWO
-
-If LEcityTwo <> "" And LEstateTwo <> "" Then
-
-wrdApp.Selection.font.bold = True
-
-With wrdApp.Selection
-    .TypeText text:=LEtitleTwo
-    .font.bold = False
-    
-    
-        LElocTwo = LEcityTwo & ", " & LEstateTwo
-        .TypeText text:=LElocTwo
-    
-        .ParagraphFormat.TabStops.Add position:=lineWidth, _
-            alignment:=wdAlignTabRight, Leader:=0
-        .MoveLeft Unit:=1, Count:=Len(LElocTwo)
-        .TypeText text:=vbTab
-        .MoveRight Unit:=1, Count:=Len(LElocTwo)
-    
-        .TypeParagraph
-    
-        .font.italic = True
-        .TypeText text:=LEorgTwo
-        .font.italic = False
-        .TypeText text:=LEdateRangeTwo
-        .ParagraphFormat.TabStops.Add position:=lineWidth, _
-            alignment:=wdAlignTabRight, Leader:=0
-        .MoveLeft Unit:=1, Count:=Len(LEdateRangeTwo)
-        .TypeText text:=vbTab
-        .MoveRight Unit:=1, Count:=Len(LEdateRangeTwo)
-        .TypeParagraph
-        
-        With .ParagraphFormat
-            .spaceBefore = 0
-            .SpaceBeforeAuto = False
-            .spaceAfter = 0
-            .SpaceAfterAuto = False
-            .LineSpacingRule = wdLineSpaceExactly
-            .lineSpacing = 6
-        End With
-        
-        .TypeParagraph
-        .ParagraphFormat.lineSpacing = 12
-    
-End With
-
-With wrdApp
-    .ListGalleries(wdBulletGallery).ListTemplates(1).Name = ""
-    .Selection.Range.ListFormat.ApplyListTemplate ListTemplate:=.ListGalleries(wdBulletGallery).ListTemplates(1), _
-        continuepreviouslist:=False, applyto:=wdListApplyToWholeList, defaultlistbehavior:=wdWord9ListBehavior
-End With
-
-    If LEcontentTwoA <> "" Then
-        wrdApp.Selection.TypeText text:=LEcontentTwoA
-        wrdApp.Selection.TypeParagraph
-    End If
-    
-    If LEcontentTwoB <> "" Then
-        wrdApp.Selection.TypeText text:=LEcontentTwoB
-        wrdApp.Selection.TypeParagraph
-    End If
-
-    If LEcontentTwoC <> "" Then
-        wrdApp.Selection.TypeText text:=LEcontentTwoC
-        wrdApp.Selection.TypeParagraph
-    End If
-    
-    'end bulletted list
-    wrdApp.Selection.Range.ListFormat.RemoveNumbers wdBulletGallery
-    wrdApp.Selection.TypeParagraph
-
-
-End If
-
-
-
-'LE POSITION THREE
-
-If LEcityThree <> "" And LEstateThree <> "" Then
-
-wrdApp.Selection.font.bold = True
-
-With wrdApp.Selection
-    .TypeText text:=LEtitleThree
-    .font.bold = False
-    
-    
-        LElocThree = LEcityThree & ", " & LEstateThree
-        .TypeText text:=LElocThree
-    
-        .ParagraphFormat.TabStops.Add position:=lineWidth, _
-            alignment:=wdAlignTabRight, Leader:=0
-        .MoveLeft Unit:=1, Count:=Len(LElocThree)
-        .TypeText text:=vbTab
-        .MoveRight Unit:=1, Count:=Len(LElocThree)
-    
-        .TypeParagraph
-    
-        .font.italic = True
-        .TypeText text:=LEorgThree
-        .font.italic = False
-        .TypeText text:=LEdateRangeThree
-        .ParagraphFormat.TabStops.Add position:=lineWidth, _
-            alignment:=wdAlignTabRight, Leader:=0
-        .MoveLeft Unit:=1, Count:=Len(LEdateRangeThree)
-        .TypeText text:=vbTab
-        .MoveRight Unit:=1, Count:=Len(LEdateRangeThree)
-        .TypeParagraph
-        With .ParagraphFormat
-            .spaceBefore = 0
-            .SpaceBeforeAuto = False
-            .spaceAfter = 0
-            .SpaceAfterAuto = False
-            .LineSpacingRule = wdLineSpaceExactly
-            .lineSpacing = 6
-        End With
-        
-        .TypeParagraph
-        .ParagraphFormat.lineSpacing = 12
-    
-    
-End With
-
-With wrdApp
-    .ListGalleries(wdBulletGallery).ListTemplates(1).Name = ""
-    .Selection.Range.ListFormat.ApplyListTemplate ListTemplate:=.ListGalleries(wdBulletGallery).ListTemplates(1), _
-        continuepreviouslist:=False, applyto:=wdListApplyToWholeList, defaultlistbehavior:=wdWord9ListBehavior
-End With
-
-    If LEcontentThreeA <> "" Then
-        wrdApp.Selection.TypeText text:=LEcontentThreeA
-        wrdApp.Selection.TypeParagraph
-    End If
-    
-    If LEcontentThreeB <> "" Then
-        wrdApp.Selection.TypeText text:=LEcontentThreeB
-        wrdApp.Selection.TypeParagraph
-    End If
-
-    If LEcontentThreeC <> "" Then
-        wrdApp.Selection.TypeText text:=LEcontentThreeC
-        wrdApp.Selection.TypeParagraph
-    End If
-    
-    'end bulletted list
-    wrdApp.Selection.Range.ListFormat.RemoveNumbers wdBulletGallery
-    wrdApp.Selection.TypeParagraph
-
-End If
-
-
-'LE POSITION FOUR
-
-If LEcityFour <> "" And LEstateFour <> "" Then
-
-wrdApp.Selection.font.bold = True
-
-With wrdApp.Selection
-    .TypeText text:=LEtitleFour
-    .font.bold = False
-    
-    
-        LElocFour = LEcityFour & ", " & LEstateFour
-        .TypeText text:=LElocFour
-    
-        .ParagraphFormat.TabStops.Add position:=lineWidth, _
-            alignment:=wdAlignTabRight, Leader:=0
-        .MoveLeft Unit:=1, Count:=Len(LElocFour)
-        .TypeText text:=vbTab
-        .MoveRight Unit:=1, Count:=Len(LElocFour)
-    
-        .TypeParagraph
-    
-        .font.italic = True
-        .TypeText text:=LEorgFour
-        .font.italic = False
-        .TypeText text:=LEdateRangeFour
-        .ParagraphFormat.TabStops.Add position:=lineWidth, _
-            alignment:=wdAlignTabRight, Leader:=0
-        .MoveLeft Unit:=1, Count:=Len(LEdateRangeFour)
-        .TypeText text:=vbTab
-        .MoveRight Unit:=1, Count:=Len(LEdateRangeFour)
-        .TypeParagraph
-        With .ParagraphFormat
-            .spaceBefore = 0
-            .SpaceBeforeAuto = False
-            .spaceAfter = 0
-            .SpaceAfterAuto = False
-            .LineSpacingRule = wdLineSpaceExactly
-            .lineSpacing = 6
-        End With
-        
-        .TypeParagraph
-        .ParagraphFormat.lineSpacing = 12
-    
-    
-    
-End With
-
-With wrdApp
-    .ListGalleries(wdBulletGallery).ListTemplates(1).Name = ""
-    .Selection.Range.ListFormat.ApplyListTemplate ListTemplate:=.ListGalleries(wdBulletGallery).ListTemplates(1), _
-        continuepreviouslist:=False, applyto:=wdListApplyToWholeList, defaultlistbehavior:=wdWord9ListBehavior
-End With
-
-    If LEcontentFourA <> "" Then
-        wrdApp.Selection.TypeText text:=LEcontentFourA
-        wrdApp.Selection.TypeParagraph
-    End If
-    
-    If LEcontentFourB <> "" Then
-        wrdApp.Selection.TypeText text:=LEcontentFourB
-        wrdApp.Selection.TypeParagraph
-    End If
-
-    If LEcontentFourC <> "" Then
-        wrdApp.Selection.TypeText text:=LEcontentFourC
-        wrdApp.Selection.TypeParagraph
-    End If
-    
-    'end bulletted list
-    wrdApp.Selection.Range.ListFormat.RemoveNumbers wdBulletGallery
-    wrdApp.Selection.TypeParagraph
-
-
-End If
-
-
-
-
-
-
-
-'PROFESSIONAL EXPERIENCE
-
-With wrdApp.Selection
-    .font.bold = True
-    .TypeText text:=UCase(wsData.Range("secTwoTitle"))
-    'center
-    With .ParagraphFormat
-        .alignment = 1
-        .spaceAfter = 0
-    End With
-End With
-    
-
-
-'add line
-With wrdApp.Selection
-    .Characters(1).borders.Enable = True
-    With .ParagraphFormat
-        .borders(wdBorderBottom).lineWidth = wdLineWidth025pt
-        .borders(wdBorderTop).LineStyle = wdLineStyleNone
-        .borders(wdBorderRight).LineStyle = wdLineStyleNone
-        .borders(wdBorderLeft).LineStyle = wdLineStyleNone
-    End With
-    
-    .TypeParagraph
-End With
-
-With wrdApp.Selection
-    .Characters(1).borders.Enable = False
-    'align left
-    .ParagraphFormat.alignment = 0
-    .font.size = 10
-End With
-
-
-
-
-
-'store variables
-PEtitleOne = Range("PEtitleOne")
-PEorgOne = Range("PEorgOne")
-PEcityOne = Range("PEcityOne")
-PEstateOne = Range("PEstateOne")
-PEstartMoOne = Range("PEstartMoOne")
-PEstartYrOne = Range("PEstartYrOne")
-PEendMoOne = Range("PEendMoOne")
-PEendYrOne = Range("PEendYrOne")
-PEcontentOneA = Range("PEcontentOneA")
-PEcontentOneB = Range("PEcontentOneB")
-PEcontentOneC = Range("PEcontentOneC")
-
-PEtitleTwo = Range("PEtitleTwo")
-PEorgTwo = Range("PEorgTwo")
-PEcityTwo = Range("PEcityTwo")
-PEstateTwo = Range("PEstateTwo")
-PEstartMoTwo = Range("PEstartMoTwo")
-PEstartYrTwo = Range("PEstartYrTwo")
-PEendMoTwo = Range("PEendMoTwo")
-PEendYrTwo = Range("PEendYrTwo")
-PEcontentTwoA = Range("PEcontentTwoA")
-PEcontentTwoB = Range("PEcontentTwoB")
-PEcontentTwoC = Range("PEcontentTwoC")
-
-PEtitleThree = Range("PEtitleThree")
-PEorgThree = Range("PEorgThree")
-PEcityThree = Range("PEcityThree")
-PEstateThree = Range("PEstateThree")
-PEstartMoThree = Range("PEstartMoThree")
-PEstartYrThree = Range("PEstartYrThree")
-PEendMoThree = Range("PEendMoThree")
-PEendYrThree = Range("PEendYrThree")
-PEcontentThreeA = Range("PEcontentThreeA")
-PEcontentThreeB = Range("PEcontentThreeB")
-PEcontentThreeC = Range("PEcontentThreeC")
-
-PEtitleFour = Range("PEtitleFour")
-PEorgFour = Range("PEorgFour")
-PEcityFour = Range("PEcityFour")
-PEstateFour = Range("PEstateFour")
-PEstartMoFour = Range("PEstartMoFour")
-PEstartYrFour = Range("PEstartYrFour")
-PEendMoFour = Range("PEendMoFour")
-PEendYrFour = Range("PEendYrFour")
-PEcontentFourA = Range("PEcontentFourA")
-PEcontentFourB = Range("PEcontentFourB")
-PEcontentFourC = Range("PEcontentFourC")
-
 If PEstartMoOne <> "" Or _
     PEstartYrOne <> "" Or _
     PEendMoOne <> "" Or _
@@ -1155,434 +837,75 @@ If PEstartMoFour <> "" Or _
         If PEendYrFour <> "" Then PEdateRangeFour = PEdateRangeFour & " " & PEendYrFour
 End If
 
-'PE POSITION ONE
+End Sub
 
-If PEcityOne <> "" And PEstateOne <> "" Then
+Sub addPosition(title As String, _
+                org As String, _
+                loc As String, _
+                dateRange As String, _
+                contentA As String, _
+                contentB As String, _
+                contentC As String)
+    Call font(True, False, False, 10, , 0)
+    Call enterText(title)
+    Call font(False, False, False, 10, , 0)
+    Call enterText(loc)
+    Call sendRight(loc)
+    Call newLine(wrdApp)
+    Call font(False, True, False, 10, , 0)
+    Call enterText(org)
+    Call font(False, False, False, 10, , 0)
+    Call enterText(dateRange)
+    Call sendRight(dateRange)
 
-With wrdApp.Selection
-    .TypeText text:=PEtitleOne
-    .font.bold = False
-    
-    
-        PElocOne = PEcityOne & ", " & PEstateOne
-        .TypeText text:=PElocOne
-    
-    
-        .ParagraphFormat.TabStops.Add position:=lineWidth, _
-            alignment:=wdAlignTabRight, Leader:=0
-        .MoveLeft Unit:=1, Count:=Len(PElocOne)
-        .TypeText text:=vbTab
-        .MoveRight Unit:=1, Count:=Len(PElocOne)
-    
-        .TypeParagraph
-    
-        .font.italic = True
-        .TypeText text:=PEorgOne
-        .font.italic = False
-        .TypeText text:=PEdateRangeOne
-        .ParagraphFormat.TabStops.Add position:=lineWidth, _
-            alignment:=wdAlignTabRight, Leader:=0
-        .MoveLeft Unit:=1, Count:=Len(PEdateRangeOne)
-        .TypeText text:=vbTab
-        .MoveRight Unit:=1, Count:=Len(PEdateRangeOne)
-        .TypeParagraph
-        With .ParagraphFormat
-            .spaceBefore = 0
-            .SpaceBeforeAuto = False
-            .spaceAfter = 0
-            .SpaceAfterAuto = False
-            .LineSpacingRule = wdLineSpaceExactly
-            .lineSpacing = 6
-        End With
-        
-        .TypeParagraph
-        .ParagraphFormat.lineSpacing = 12
-    
-    
-End With
+    Call newLine(wrdApp)
+    Call lineSpacing(0, 0, 6)
+    Call newLine(wrdApp)
+    Call lineSpacing(0, 0, 12)
 
-With wrdApp
-    .ListGalleries(wdBulletGallery).ListTemplates(1).Name = ""
-    .Selection.Range.ListFormat.ApplyListTemplate ListTemplate:=.ListGalleries(wdBulletGallery).ListTemplates(1), _
-        continuepreviouslist:=False, applyto:=wdListApplyToWholeList, defaultlistbehavior:=wdWord9ListBehavior
-End With
+    Call bulletList(True)
 
-    If PEcontentOneA <> "" Then
-        wrdApp.Selection.TypeText text:=PEcontentOneA
-        wrdApp.Selection.TypeParagraph
-    End If
-    
-    If PEcontentOneB <> "" Then
-        wrdApp.Selection.TypeText text:=PEcontentOneB
-        wrdApp.Selection.TypeParagraph
+    If contentA <> "" Then
+        Call enterText(contentA)
+        Call newLine(wrdApp)
     End If
 
-    If PEcontentOneC <> "" Then
-        wrdApp.Selection.TypeText text:=PEcontentOneC
-        wrdApp.Selection.TypeParagraph
-    End If
-    
-    'end bulletted list
-    wrdApp.Selection.Range.ListFormat.RemoveNumbers wdBulletGallery
-    wrdApp.Selection.TypeParagraph
-
-
-End If
-
-
-'PE POSITION TWO
-
-If PEcityTwo <> "" And PEstateTwo <> "" Then
-
-wrdApp.Selection.font.bold = True
-
-With wrdApp.Selection
-    .TypeText text:=PEtitleTwo
-    .font.bold = False
-    
-    
-        PElocTwo = PEcityTwo & ", " & PEstateTwo
-        .TypeText text:=PElocTwo
-    
-        .ParagraphFormat.TabStops.Add position:=lineWidth, _
-            alignment:=wdAlignTabRight, Leader:=0
-        .MoveLeft Unit:=1, Count:=Len(PElocTwo)
-        .TypeText text:=vbTab
-        .MoveRight Unit:=1, Count:=Len(PElocTwo)
-    
-        .TypeParagraph
-    
-        .font.italic = True
-        .TypeText text:=PEorgTwo
-        .font.italic = False
-        .TypeText text:=PEdateRangeTwo
-        .ParagraphFormat.TabStops.Add position:=lineWidth, _
-            alignment:=wdAlignTabRight, Leader:=0
-        .MoveLeft Unit:=1, Count:=Len(PEdateRangeTwo)
-        .TypeText text:=vbTab
-        .MoveRight Unit:=1, Count:=Len(PEdateRangeTwo)
-        .TypeParagraph
-        With .ParagraphFormat
-            .spaceBefore = 0
-            .SpaceBeforeAuto = False
-            .spaceAfter = 0
-            .SpaceAfterAuto = False
-            .LineSpacingRule = wdLineSpaceExactly
-            .lineSpacing = 6
-        End With
-        
-        .TypeParagraph
-        .ParagraphFormat.lineSpacing = 12
-    
-End With
-
-With wrdApp
-    .ListGalleries(wdBulletGallery).ListTemplates(1).Name = ""
-    .Selection.Range.ListFormat.ApplyListTemplate ListTemplate:=.ListGalleries(wdBulletGallery).ListTemplates(1), _
-        continuepreviouslist:=False, applyto:=wdListApplyToWholeList, defaultlistbehavior:=wdWord9ListBehavior
-End With
-
-    If PEcontentTwoA <> "" Then
-        wrdApp.Selection.TypeText text:=PEcontentTwoA
-        wrdApp.Selection.TypeParagraph
-    End If
-    
-    If PEcontentTwoB <> "" Then
-        wrdApp.Selection.TypeText text:=PEcontentTwoB
-        wrdApp.Selection.TypeParagraph
+    If contentB <> "" Then
+        Call enterText(contentB)
+        Call newLine(wrdApp)
     End If
 
-    If PEcontentTwoC <> "" Then
-        wrdApp.Selection.TypeText text:=PEcontentTwoC
-        wrdApp.Selection.TypeParagraph
-    End If
-    
-    'end bulletted list
-    wrdApp.Selection.Range.ListFormat.RemoveNumbers wdBulletGallery
-    wrdApp.Selection.TypeParagraph
-
-
-End If
-
-
-
-'PE POSITION THREE
-
-If PEcityThree <> "" And PEstateThree <> "" Then
-
-wrdApp.Selection.font.bold = True
-
-With wrdApp.Selection
-    .TypeText text:=PEtitleThree
-    .font.bold = False
-    
-    
-        PElocThree = PEcityThree & ", " & PEstateThree
-        .TypeText text:=PElocThree
-    
-        .ParagraphFormat.TabStops.Add position:=lineWidth, _
-            alignment:=wdAlignTabRight, Leader:=0
-        .MoveLeft Unit:=1, Count:=Len(PElocThree)
-        .TypeText text:=vbTab
-        .MoveRight Unit:=1, Count:=Len(PElocThree)
-    
-        .TypeParagraph
-    
-        .font.italic = True
-        .TypeText text:=PEorgThree
-        .font.italic = False
-        .TypeText text:=PEdateRangeThree
-        .ParagraphFormat.TabStops.Add position:=lineWidth, _
-            alignment:=wdAlignTabRight, Leader:=0
-        .MoveLeft Unit:=1, Count:=Len(PEdateRangeThree)
-        .TypeText text:=vbTab
-        .MoveRight Unit:=1, Count:=Len(PEdateRangeThree)
-        .TypeParagraph
-        With .ParagraphFormat
-            .spaceBefore = 0
-            .SpaceBeforeAuto = False
-            .spaceAfter = 0
-            .SpaceAfterAuto = False
-            .LineSpacingRule = wdLineSpaceExactly
-            .lineSpacing = 6
-        End With
-        
-        .TypeParagraph
-        .ParagraphFormat.lineSpacing = 12
-    
-    
-End With
-
-With wrdApp
-    .ListGalleries(wdBulletGallery).ListTemplates(1).Name = ""
-    .Selection.Range.ListFormat.ApplyListTemplate ListTemplate:=.ListGalleries(wdBulletGallery).ListTemplates(1), _
-        continuepreviouslist:=False, applyto:=wdListApplyToWholeList, defaultlistbehavior:=wdWord9ListBehavior
-End With
-
-    If PEcontentThreeA <> "" Then
-        wrdApp.Selection.TypeText text:=PEcontentThreeA
-        wrdApp.Selection.TypeParagraph
-    End If
-    
-    If PEcontentThreeB <> "" Then
-        wrdApp.Selection.TypeText text:=PEcontentThreeB
-        wrdApp.Selection.TypeParagraph
+    If contentC <> "" Then
+        Call enterText(contentC)
+        Call newLine(wrdApp)
     End If
 
-    If PEcontentThreeC <> "" Then
-        wrdApp.Selection.TypeText text:=PEcontentThreeC
-        wrdApp.Selection.TypeParagraph
-    End If
-    
-    'end bulletted list
-    wrdApp.Selection.Range.ListFormat.RemoveNumbers wdBulletGallery
-    wrdApp.Selection.TypeParagraph
+    Call bulletList(False)
 
-End If
+End Sub
 
+Sub addSkill(listTitle As String, list As String)
 
-'PE POSITION FOUR
+    Call font(True, False, False, 10, , 0)
+    Call enterText(listTitle & ": ")
+    Call font(False, False, False, 10, , 0)
+    Call enterText(list)
+    Call newLine(wrdApp)
 
-If PEcityFour <> "" And PEstateFour <> "" Then
+End Sub
 
-wrdApp.Selection.font.bold = True
+Sub doctor()
 
-With wrdApp.Selection
-    .TypeText text:=PEtitleFour
-    .font.bold = False
-    
-    
-        PElocFour = PEcityFour & ", " & PEstateFour
-        .TypeText text:=PElocFour
-    
-        .ParagraphFormat.TabStops.Add position:=lineWidth, _
-            alignment:=wdAlignTabRight, Leader:=0
-        .MoveLeft Unit:=1, Count:=Len(PElocFour)
-        .TypeText text:=vbTab
-        .MoveRight Unit:=1, Count:=Len(PElocFour)
-    
-        .TypeParagraph
-    
-        .font.italic = True
-        .TypeText text:=PEorgFour
-        .font.italic = False
-        .TypeText text:=PEdateRangeFour
-        .ParagraphFormat.TabStops.Add position:=lineWidth, _
-            alignment:=wdAlignTabRight, Leader:=0
-        .MoveLeft Unit:=1, Count:=Len(PEdateRangeFour)
-        .TypeText text:=vbTab
-        .MoveRight Unit:=1, Count:=Len(PEdateRangeFour)
-        .TypeParagraph
-        With .ParagraphFormat
-            .spaceBefore = 0
-            .SpaceBeforeAuto = False
-            .spaceAfter = 0
-            .SpaceAfterAuto = False
-            .LineSpacingRule = wdLineSpaceExactly
-            .lineSpacing = 6
-        End With
-        
-        .TypeParagraph
-        .ParagraphFormat.lineSpacing = 12
-    
-    
-    
-End With
-
-With wrdApp
-    .ListGalleries(wdBulletGallery).ListTemplates(1).Name = ""
-    .Selection.Range.ListFormat.ApplyListTemplate ListTemplate:=.ListGalleries(wdBulletGallery).ListTemplates(1), _
-        continuepreviouslist:=False, applyto:=wdListApplyToWholeList, defaultlistbehavior:=wdWord9ListBehavior
-End With
-
-    If PEcontentFourA <> "" Then
-        wrdApp.Selection.TypeText text:=PEcontentFourA
-        wrdApp.Selection.TypeParagraph
-    End If
-    
-    If PEcontentFourB <> "" Then
-        wrdApp.Selection.TypeText text:=PEcontentFourB
-        wrdApp.Selection.TypeParagraph
-    End If
-
-    If PEcontentFourC <> "" Then
-        wrdApp.Selection.TypeText text:=PEcontentFourC
-        wrdApp.Selection.TypeParagraph
-    End If
-    
-    'end bulletted list
-    wrdApp.Selection.Range.ListFormat.RemoveNumbers wdBulletGallery
-    wrdApp.Selection.TypeParagraph
-
-End If
-
-
-
-
-
-
-
-
-'SKILLS & INTERESTS (SECTION C)
-
-listTitleOne = Range("listTitleOne")
-listTitleTwo = Range("listTitleTwo")
-listTitleThree = Range("listTitleThree")
-listTitleFour = Range("listTitleFour")
-listTitleFive = Range("listTitleFive")
-listTitleSix = Range("listTitleSix")
-listTitleSeven = Range("listTitleSeven")
-
-listOne = Range("listOne")
-listTwo = Range("listTwo")
-listThree = Range("listThree")
-listFour = Range("listFour")
-listFive = Range("listFive")
-listSix = Range("listSix")
-listSeven = Range("listSeven")
-
-With wrdApp.Selection
-    .font.bold = True
-    .TypeText text:=UCase(wsData.Range("secThreeTitle"))
-    'center
-    With .ParagraphFormat
-        .alignment = 1
-        .spaceAfter = 0
-    End With
-End With
-    
-
-
-'add line
-With wrdApp.Selection
-    .Characters(1).borders.Enable = True
-    With .ParagraphFormat
-        .borders(wdBorderBottom).lineWidth = wdLineWidth025pt
-        .borders(wdBorderTop).LineStyle = wdLineStyleNone
-        .borders(wdBorderRight).LineStyle = wdLineStyleNone
-        .borders(wdBorderLeft).LineStyle = wdLineStyleNone
-    End With
-    
-    .TypeParagraph
-End With
-
-With wrdApp.Selection
-    .Characters(1).borders.Enable = False
-    'align left
-    .ParagraphFormat.alignment = 0
-    .font.size = 10
-End With
-
-'enter content
-With wrdApp.Selection
-    
-    If listOne <> "" Then
-        .font.bold = True
-        .TypeText text:=listTitleOne & ": "
-        .font.bold = False
-        .TypeText text:=listOne
-        .TypeParagraph
-    End If
-    
-    If listTwo <> "" Then
-        .font.bold = True
-        .TypeText text:=listTitleTwo & ": "
-        .font.bold = False
-        .TypeText text:=listTwo
-        .TypeParagraph
-    End If
-    
-    If listThree <> "" Then
-        .font.bold = True
-        .TypeText text:=listTitleThree & ": "
-        .font.bold = False
-        .TypeText text:=listThree
-        .TypeParagraph
-    End If
-    
-    If listFour <> "" Then
-        .font.bold = True
-        .TypeText text:=listTitleFour & ": "
-        .font.bold = False
-        .TypeText text:=listFour
-        .TypeParagraph
-    End If
-    
-    If listFive <> "" Then
-        .font.bold = True
-        .TypeText text:=listTitleFive & ": "
-        .font.bold = False
-        .TypeText text:=listFive
-        .TypeParagraph
-    End If
-    
-    If listSix <> "" Then
-        .font.bold = True
-        .TypeText text:=listTitleSix & ": "
-        .font.bold = False
-        .TypeText text:=listSix
-        .TypeParagraph
-    End If
-    
-    If listSeven <> "" Then
-        .font.bold = True
-        .TypeText text:=listTitleSeven & ": "
-        .font.bold = False
-        .TypeText text:=listSeven
-        .TypeParagraph
-    End If
-
-End With
 
 timeTwo = Timer
 
 MsgBox (timeTwo - timeOne)
-'END OF RESUME CONTENT ****************************************************************
 'MsgBox (wrdApp.Information(wdNumberOfPagesInDocument))
 
 Do Until complete = 1
 
 multiPageMsg = "The resume you've created is longer than one page. "
+
 If newThru = 1 Then
     multiPageMsg = "Your resume is still over one page. "
 End If
@@ -1595,38 +918,50 @@ If nPages > 1 Then
                 "(A) Adjust the line spacing" & vbNewLine & _
                 "(B) Leave it as is")
 
-                
-            If InStr(UCase(response), "B") > 0 Then Exit Do
-            
-            If InStr(UCase(response), "A") > 0 Then
-                'wrdDoc.Range.End(wdUp).Select
-                wrdApp.Selection.HomeKey Unit:=wdStory, Extend:=wdExtend
-                wrdApp.Selection.MoveDown Unit:=wdLine, Count:=1, Extend:=wdExtend
-        
+    If InStr(UCase(response), "B") > 0 Then Exit Do
 
-                With wrdApp.Selection.ParagraphFormat
-                    .spaceAfter = 0
-                    .SpaceAfterAuto = False
-                    .LineSpacingRule = wdLineSpaceExactly
-                    .lineSpacing = .lineSpacing - 1
-                End With
-            End If
-                
-            
+    If InStr(UCase(response), "A") > 0 Then
+        'wrdDoc.Range.End(wdUp).Select
+        wrdApp.Selection.HomeKey Unit:=wdStory, Extend:=wdExtend
+        wrdApp.Selection.MoveDown Unit:=wdLine, Count:=1, Extend:=wdExtend
+
+        With wrdApp.Selection.ParagraphFormat
+            .spaceAfter = 0
+            .SpaceAfterAuto = False
+            .LineSpacingRule = wdLineSpaceExactly
+            .lineSpacing = .lineSpacing - 1
+        End With
+
+    End If
+
 Else
     complete = 1
 End If
     newThru = 1
 Loop
 
-'SHOW DOCUMENT
+
+End Sub
+
+Sub showDoc()
+
 wrdApp.Visible = True
 wrdApp.Activate
-
-'reset objects
 Set wrdDoc = Nothing
 Set wrdApp = Nothing
 
-
-
 End Sub
+
+
+
+
+
+
+
+
+
+
+
+
+
+
